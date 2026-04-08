@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PerformAI — Intelligent Performance Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0c14;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d47;
+    --accent: #3b82f6;
+    --accent2: #06d6a0;
+    --accent3: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --heading: #f8fafc;
+    --card: #141e30;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+  /* HEADER */
+  header{background:linear-gradient(135deg,#0d1b2a 0%,#111827 60%,#0a1628 100%);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+  .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--heading);display:flex;align-items:center;gap:.5rem;}
+  .logo span{color:var(--accent);}
+  .logo-dot{width:8px;height:8px;background:var(--accent2);border-radius:50%;display:inline-block;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.3);}}
+  nav{display:flex;gap:.25rem;}
+  nav button{background:transparent;border:none;color:var(--muted);padding:.5rem 1rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:500;transition:all .2s;}
+  nav button:hover,nav button.active{background:var(--surface2);color:var(--text);}
+  nav button.active{color:var(--accent);}
+  .header-right{display:flex;align-items:center;gap:1rem;}
+  .user-badge{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:.35rem .75rem .35rem .5rem;display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--muted);}
+  .avatar{width:26px;height:26px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff;}
+
+  /* LAYOUT */
+  .app{display:flex;min-height:calc(100vh - 64px);}
+  .sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;flex-shrink:0;display:flex;flex-direction:column;gap:.25rem;}
+  .sidebar-section{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.75rem .75rem .35rem;margin-top:.5rem;}
+  .sidebar-item{display:flex;align-items:center;gap:.75rem;padding:.65rem .75rem;border-radius:8px;cursor:pointer;color:var(--muted);font-size:.875rem;font-weight:500;transition:all .2s;border:1px solid transparent;}
+  .sidebar-item:hover{background:var(--surface2);color:var(--text);}
+  .sidebar-item.active{background:rgba(59,130,246,.1);color:var(--accent);border-color:rgba(59,130,246,.2);}
+  .sidebar-item .icon{font-size:1rem;width:20px;text-align:center;}
+  .sidebar-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;padding:.1rem .4rem;border-radius:10px;}
+
+  /* MAIN */
+  .main{flex:1;overflow-y:auto;}
+  .page{display:none;padding:2rem;}
+  .page.active{display:block;}
+
+  /* PAGE HEADER */
+  .page-header{margin-bottom:2rem;}
+  .page-title{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;color:var(--heading);}
+  .page-sub{color:var(--muted);font-size:.9rem;margin-top:.25rem;}
+  .breadcrumb{font-size:.75rem;color:var(--muted);margin-bottom:.5rem;display:flex;gap:.5rem;align-items:center;}
+  .breadcrumb span{color:var(--accent);}
+
+  /* CARDS */
+  .grid{display:grid;gap:1.25rem;}
+  .grid-2{grid-template-columns:1fr 1fr;}
+  .grid-3{grid-template-columns:1fr 1fr 1fr;}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;transition:border-color .2s;}
+  .card:hover{border-color:var(--accent);}
+  .card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--heading);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem;}
+  .card-title .ct-icon{font-size:1.1rem;}
+
+  /* METRICS */
+  .metric-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+  .metric-label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+  .metric-value{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--heading);margin:.25rem 0;}
+  .metric-change{font-size:.8rem;display:flex;align-items:center;gap:.25rem;}
+  .metric-change.up{color:var(--accent2);}
+  .metric-change.down{color:var(--danger);}
+  .metric-icon{font-size:1.5rem;float:right;margin-top:-2rem;}
+
+  /* SCORE RING */
+  .score-ring{position:relative;display:inline-flex;align-items:center;justify-content:center;}
+  .score-ring svg{transform:rotate(-90deg);}
+  .score-ring-label{position:absolute;text-align:center;}
+  .score-ring-num{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--heading);}
+  .score-ring-sub{font-size:.65rem;color:var(--muted);}
+
+  /* PROGRESS BAR */
+  .progress-bar{height:6px;background:var(--surface2);border-radius:4px;overflow:hidden;margin:.25rem 0;}
+  .progress-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+  .fill-blue{background:linear-gradient(90deg,var(--accent),#60a5fa);}
+  .fill-green{background:linear-gradient(90deg,var(--accent2),#34d399);}
+  .fill-amber{background:linear-gradient(90deg,var(--accent3),#fbbf24);}
+  .fill-red{background:linear-gradient(90deg,var(--danger),#f87171);}
+  .fill-purple{background:linear-gradient(90deg,#8b5cf6,#a78bfa);}
+
+  /* EMPLOYEE TABLE */
+  table{width:100%;border-collapse:collapse;}
+  thead th{text-align:left;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.75rem 1rem;border-bottom:1px solid var(--border);}
+  tbody tr{border-bottom:1px solid rgba(30,45,71,.5);transition:background .15s;}
+  tbody tr:hover{background:var(--surface2);}
+  tbody td{padding:.85rem 1rem;font-size:.875rem;}
+  .emp-name{font-weight:600;color:var(--heading);}
+  .emp-dept{font-size:.75rem;color:var(--muted);}
+  .score-pill{display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .65rem;border-radius:12px;font-size:.75rem;font-weight:700;}
+  .score-pill.excellent{background:rgba(6,214,160,.15);color:var(--accent2);}
+  .score-pill.good{background:rgba(59,130,246,.15);color:var(--accent);}
+  .score-pill.average{background:rgba(245,158,11,.15);color:var(--accent3);}
+  .score-pill.poor{background:rgba(239,68,68,.15);color:var(--danger);}
+  .status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+  .dot-green{background:var(--accent2);}
+  .dot-amber{background:var(--accent3);}
+  .dot-red{background:var(--danger);}
+
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.2rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.875rem;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:#2563eb;transform:translateY(-1px);}
+  .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+  .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-sm{padding:.4rem .85rem;font-size:.8rem;}
+  .btn-success{background:var(--accent2);color:#0a0c14;}
+  .btn-success:hover{background:#04b885;}
+
+  /* FORMS */
+  .form-group{margin-bottom:1.25rem;}
+  .form-label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;}
+  .form-input,.form-select,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.65rem .85rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.875rem;outline:none;transition:border-color .2s;}
+  .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+  .form-textarea{resize:vertical;min-height:80px;}
+  .form-select option{background:var(--surface);}
+  .range-input{width:100%;accent-color:var(--accent);}
+  .range-val{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--accent);}
+
+  /* STARS */
+  .star-rating{display:flex;gap:.25rem;}
+  .star{font-size:1.4rem;cursor:pointer;color:var(--muted);transition:color .15s;}
+  .star.active{color:var(--accent3);}
+
+  /* AI CHAT */
+  .ai-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;height:520px;}
+  .ai-header{background:linear-gradient(135deg,rgba(59,130,246,.1),rgba(6,214,160,.05));border-bottom:1px solid var(--border);padding:1rem 1.25rem;display:flex;align-items:center;gap:.75rem;}
+  .ai-dot{width:10px;height:10px;background:var(--accent2);border-radius:50%;animation:pulse 1.5s infinite;}
+  .ai-title{font-family:'Syne',sans-serif;font-weight:700;color:var(--heading);font-size:.95rem;}
+  .ai-subtitle{font-size:.75rem;color:var(--muted);}
+  .ai-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem;}
+  .msg{display:flex;gap:.75rem;animation:fadeUp .3s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  .msg-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;}
+  .msg-ai .msg-avatar{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
+  .msg-user .msg-avatar{background:var(--surface2);color:var(--text);}
+  .msg-user{flex-direction:row-reverse;}
+  .msg-bubble{background:var(--surface2);border:1px solid var(--border);padding:.65rem 1rem;border-radius:12px;font-size:.85rem;line-height:1.6;max-width:80%;}
+  .msg-user .msg-bubble{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.3);}
+  .msg-ai .msg-bubble{border-radius:4px 12px 12px 12px;}
+  .msg-user .msg-bubble{border-radius:12px 4px 12px 12px;}
+  .ai-input-row{border-top:1px solid var(--border);padding:.75rem;display:flex;gap:.5rem;}
+  .ai-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.6rem .85rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;}
+  .ai-input:focus{border-color:var(--accent);}
+  .typing{display:flex;gap:.25rem;align-items:center;padding:.5rem 0;}
+  .typing-dot{width:6px;height:6px;background:var(--muted);border-radius:50%;animation:blink 1.2s infinite;}
+  .typing-dot:nth-child(2){animation-delay:.2s;}
+  .typing-dot:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,100%{opacity:.3;}50%{opacity:1;}}
+
+  /* BIAS ALERT */
+  .bias-alert{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:1rem;display:flex;gap:.75rem;align-items:flex-start;}
+  .bias-icon{font-size:1.3rem;flex-shrink:0;}
+  .bias-text{font-size:.85rem;line-height:1.5;}
+  .bias-title{font-weight:700;color:var(--accent3);margin-bottom:.2rem;}
+
+  /* GOAL ITEM */
+  .goal-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;display:flex;gap:1rem;align-items:flex-start;transition:border-color .2s;}
+  .goal-item:hover{border-color:var(--accent2);}
+  .goal-check{width:20px;height:20px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all .2s;}
+  .goal-check.done{background:var(--accent2);border-color:var(--accent2);}
+  .goal-check.done::after{content:'✓';color:#0a0c14;font-size:.7rem;font-weight:900;}
+  .goal-content{flex:1;}
+  .goal-title{font-weight:600;color:var(--heading);font-size:.9rem;}
+  .goal-meta{font-size:.75rem;color:var(--muted);margin-top:.2rem;display:flex;gap:1rem;}
+  .goal-progress-bar{margin-top:.5rem;}
+
+  /* TABS */
+  .tabs{display:flex;gap:.25rem;border-bottom:1px solid var(--border);margin-bottom:1.5rem;}
+  .tab{padding:.6rem 1.1rem;font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+  /* TAGS */
+  .tag{display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .55rem;border-radius:6px;font-size:.7rem;font-weight:600;background:var(--surface2);border:1px solid var(--border);color:var(--muted);}
+
+  /* TIMELINE */
+  .timeline{display:flex;flex-direction:column;gap:0;}
+  .timeline-item{display:flex;gap:1rem;padding-bottom:1.25rem;position:relative;}
+  .timeline-item:not(:last-child)::after{content:'';position:absolute;left:15px;top:32px;bottom:0;width:1px;background:var(--border);}
+  .timeline-dot{width:30px;height:30px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;}
+  .timeline-dot.done{background:rgba(6,214,160,.15);border-color:var(--accent2);}
+  .timeline-content{flex:1;padding-top:.25rem;}
+  .timeline-title{font-weight:600;color:var(--heading);font-size:.9rem;}
+  .timeline-sub{font-size:.78rem;color:var(--muted);margin-top:.1rem;}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:min(640px,90vw);max-height:85vh;overflow-y:auto;animation:modalIn .25s ease;}
+  @keyframes modalIn{from{opacity:0;transform:translateY(16px) scale(.97);}to{opacity:1;transform:none;}}
+  .modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:var(--heading);margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;}
+  .modal-close{background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--surface);border:1px solid var(--accent2);border-radius:10px;padding:.85rem 1.25rem;display:flex;align-items:center;gap:.75rem;font-size:.875rem;color:var(--heading);z-index:300;animation:toastIn .3s ease;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+  .toast.hidden{display:none;}
+  @keyframes toastIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-track{background:var(--surface);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+  /* LOADING */
+  .loading-dots{display:inline-flex;gap:3px;align-items:center;}
+  .loading-dots span{width:4px;height:4px;background:currentColor;border-radius:50%;animation:blink 1s infinite;}
+  .loading-dots span:nth-child(2){animation-delay:.2s;}
+  .loading-dots span:nth-child(3){animation-delay:.4s;}
+
+  /* CHIP */
+  .chip{display:inline-flex;align-items:center;padding:.15rem .5rem;border-radius:20px;font-size:.7rem;font-weight:600;}
+  .chip-blue{background:rgba(59,130,246,.15);color:var(--accent);}
+  .chip-green{background:rgba(6,214,160,.15);color:var(--accent2);}
+  .chip-amber{background:rgba(245,158,11,.15);color:var(--accent3);}
+  .chip-red{background:rgba(239,68,68,.15);color:var(--danger);}
+
+  /* REPORT OUTPUT */
+  .report-box{background:linear-gradient(135deg,rgba(59,130,246,.04),rgba(6,214,160,.02));border:1px solid var(--border);border-radius:12px;padding:1.5rem;white-space:pre-wrap;font-size:.875rem;line-height:1.8;color:var(--text);font-family:'DM Sans',sans-serif;}
+  .report-box h3{font-family:'Syne',sans-serif;font-weight:700;color:var(--heading);font-size:1rem;margin-bottom:.5rem;margin-top:1rem;}
+  .report-box h3:first-child{margin-top:0;}
+
+  /* HERO BANNER */
+  .hero-banner{background:linear-gradient(135deg,rgba(59,130,246,.08) 0%,rgba(6,214,160,.05) 50%,rgba(139,92,246,.06) 100%);border:1px solid var(--border);border-radius:16px;padding:2rem;margin-bottom:2rem;position:relative;overflow:hidden;}
+  .hero-banner::before{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(59,130,246,.12),transparent 70%);pointer-events:none;}
+  .hero-tagline{font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:.5rem;}
+  .hero-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--heading);margin-bottom:.5rem;}
+  .hero-sub{font-size:.9rem;color:var(--muted);max-width:520px;}
+  .hero-actions{display:flex;gap:.75rem;margin-top:1.25rem;}
+
+  @media(max-width:900px){
+    .grid-3,.grid-4{grid-template-columns:1fr 1fr;}
+    .sidebar{width:60px;padding:.75rem .35rem;}
+    .sidebar-item span,.sidebar-section,.sidebar-badge{display:none;}
+    .sidebar-item{justify-content:center;}
+    .grid-2{grid-template-columns:1fr;}
+  }
+  @media(max-width:600px){
+    .grid-3,.grid-4,.grid-2{grid-template-columns:1fr;}
+    header{padding:0 1rem;}
+    nav{display:none;}
+    .page{padding:1rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <span class="logo-dot"></span>
+    Perform<span>AI</span>
+  </div>
+  <nav>
+    <button class="active" onclick="showPage('dashboard',this)">Dashboard</button>
+    <button onclick="showPage('employees',this)">Employees</button>
+    <button onclick="showPage('reviews',this)">Reviews</button>
+    <button onclick="showPage('goals',this)">Goals</button>
+    <button onclick="showPage('ai-agent',this)">AI Agent</button>
+    <button onclick="showPage('analytics',this)">Analytics</button>
+  </nav>
+  <div class="header-right">
+    <div class="user-badge">
+      <div class="avatar">HR</div>
+      HR Manager
+    </div>
+  </div>
+</header>
+
+<div class="app">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">Overview</div>
+  <div class="sidebar-item active" onclick="showPage('dashboard',null);setActive(this)">
+    <span class="icon">🏠</span><span>Dashboard</span>
+  </div>
+  <div class="sidebar-item" onclick="showPage('employees',null);setActive(this)">
+    <span class="icon">👥</span><span>Employees</span><span class="sidebar-badge">24</span>
+  </div>
+  <div class="sidebar-section">Performance</div>
+  <div class="sidebar-item" onclick="showPage('reviews',null);setActive(this)">
+    <span class="icon">📋</span><span>Reviews</span><span class="sidebar-badge">6</span>
+  </div>
+  <div class="sidebar-item" onclick="showPage('goals',null);setActive(this)">
+    <span class="icon">🎯</span><span>Goals</span>
+  </div>
+  <div class="sidebar-item" onclick="showPage('analytics',null);setActive(this)">
+    <span class="icon">📊</span><span>Analytics</span>
+  </div>
+  <div class="sidebar-section">AI Tools</div>
+  <div class="sidebar-item" onclick="showPage('ai-agent',null);setActive(this)">
+    <span class="icon">🤖</span><span>AI Agent</span>
+  </div>
+  <div class="sidebar-item" onclick="showPage('feedback',null);setActive(this)">
+    <span class="icon">💬</span><span>360° Feedback</span>
+  </div>
+  <div class="sidebar-item" onclick="showPage('bias',null);setActive(this)">
+    <span class="icon">⚖️</span><span>Bias Check</span>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <div class="breadcrumb">PerformAI <span>›</span> Dashboard</div>
+      <div class="page-title">Performance Overview</div>
+      <div class="page-sub">Q2 2026 · April cycle · 6 reviews pending</div>
+    </div>
+
+    <div class="hero-banner">
+      <div class="hero-tagline">⚡ AI-Powered</div>
+      <div class="hero-title">Intelligent Performance Management</div>
+      <div class="hero-sub">Automate fair, consistent, and bias-free performance evaluations with AI-driven insights, multi-source feedback, and smart goal alignment.</div>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="showPage('ai-agent',null);setActive(document.querySelectorAll('.sidebar-item')[6])">🤖 Launch AI Agent</button>
+        <button class="btn btn-secondary" onclick="openReviewModal()">📋 Start New Review</button>
+      </div>
+    </div>
+
+    <div class="grid grid-4" style="margin-bottom:1.25rem;">
+      <div class="metric-card">
+        <div class="metric-icon">👥</div>
+        <div class="metric-label">Total Employees</div>
+        <div class="metric-value">24</div>
+        <div class="metric-change up">↑ 2 this quarter</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">⭐</div>
+        <div class="metric-label">Avg Performance</div>
+        <div class="metric-value">7.8</div>
+        <div class="metric-change up">↑ 0.4 vs last cycle</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">📋</div>
+        <div class="metric-label">Reviews Pending</div>
+        <div class="metric-value">6</div>
+        <div class="metric-change down">↑ Due in 12 days</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">🎯</div>
+        <div class="metric-label">Goals Completed</div>
+        <div class="metric-value">71%</div>
+        <div class="metric-change up">↑ 8% vs Q1</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📊</span> Department Scores</div>
+        <div style="display:flex;flex-direction:column;gap:.9rem;margin-top:.5rem;">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.25rem;"><span>Engineering</span><span style="font-weight:700;color:var(--accent2)">8.4</span></div>
+            <div class="progress-bar"><div class="progress-fill fill-green" style="width:84%"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.25rem;"><span>Product</span><span style="font-weight:700;color:var(--accent)">7.9</span></div>
+            <div class="progress-bar"><div class="progress-fill fill-blue" style="width:79%"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.25rem;"><span>Design</span><span style="font-weight:700;color:var(--accent3)">7.5</span></div>
+            <div class="progress-bar"><div class="progress-fill fill-amber" style="width:75%"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.25rem;"><span>Sales</span><span style="font-weight:700;color:var(--accent2)">8.1</span></div>
+            <div class="progress-bar"><div class="progress-fill fill-green" style="width:81%"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.25rem;"><span>Marketing</span><span style="font-weight:700;color:var(--accent)">6.9</span></div>
+            <div class="progress-bar"><div class="progress-fill fill-blue" style="width:69%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">🔄</span> Review Cycle Progress</div>
+        <div class="timeline" style="margin-top:.75rem;">
+          <div class="timeline-item">
+            <div class="timeline-dot done">✓</div>
+            <div class="timeline-content">
+              <div class="timeline-title">Self Assessments</div>
+              <div class="timeline-sub">Completed · Mar 28</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot done">✓</div>
+            <div class="timeline-content">
+              <div class="timeline-title">Peer Feedback Collection</div>
+              <div class="timeline-sub">Completed · Apr 2</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="border-color:var(--accent);background:rgba(59,130,246,.1);">⏳</div>
+            <div class="timeline-content">
+              <div class="timeline-title">Manager Reviews</div>
+              <div class="timeline-sub" style="color:var(--accent);">In Progress · Due Apr 20</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot">📝</div>
+            <div class="timeline-content">
+              <div class="timeline-title">AI Synthesis & Bias Check</div>
+              <div class="timeline-sub">Scheduled · Apr 22</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot">🎯</div>
+            <div class="timeline-content">
+              <div class="timeline-title">1:1 Review Meetings</div>
+              <div class="timeline-sub">Scheduled · Apr 25–30</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.25rem;">
+      <div class="card-title" style="margin-bottom:1rem;justify-content:space-between;">
+        <span><span class="ct-icon">⚠️</span> Pending Reviews — Action Required</span>
+        <button class="btn btn-sm btn-secondary" onclick="showPage('reviews',null)">View All →</button>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Employee</th><th>Department</th><th>Due Date</th><th>Feedback Score</th><th>Status</th><th>Action</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><div class="emp-name">Aisha Patel</div><div class="emp-dept">Senior Engineer</div></td>
+            <td>Engineering</td><td>Apr 15</td>
+            <td><span class="score-pill excellent">⭐ 9.1</span></td>
+            <td><span class="status-dot dot-amber"></span> In Review</td>
+            <td><button class="btn btn-sm btn-primary" onclick="generateReview('Aisha Patel')">Generate Review</button></td>
+          </tr>
+          <tr>
+            <td><div class="emp-name">Marcus Chen</div><div class="emp-dept">Product Manager</div></td>
+            <td>Product</td><td>Apr 15</td>
+            <td><span class="score-pill good">⭐ 7.8</span></td>
+            <td><span class="status-dot dot-amber"></span> In Review</td>
+            <td><button class="btn btn-sm btn-primary" onclick="generateReview('Marcus Chen')">Generate Review</button></td>
+          </tr>
+          <tr>
+            <td><div class="emp-name">Sofia Rodriguez</div><div class="emp-dept">UX Designer</div></td>
+            <td>Design</td><td>Apr 18</td>
+            <td><span class="score-pill good">⭐ 8.2</span></td>
+            <td><span class="status-dot dot-amber"></span> In Review</td>
+            <td><button class="btn btn-sm btn-primary" onclick="generateReview('Sofia Rodriguez')">Generate Review</button></td>
+          </tr>
+          <tr>
+            <td><div class="emp-name">James Okonkwo</div><div class="emp-dept">Backend Engineer</div></td>
+            <td>Engineering</td><td>Apr 20</td>
+            <td><span class="score-pill average">⭐ 6.4</span></td>
+            <td><span class="status-dot dot-red"></span> Overdue</td>
+            <td><button class="btn btn-sm btn-primary" onclick="generateReview('James Okonkwo')">Generate Review</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EMPLOYEES -->
+  <div class="page" id="page-employees">
+    <div class="page-header">
+      <div class="breadcrumb">PerformAI <span>›</span> Employees</div>
+      <div class="page-title">Employee Directory</div>
+      <div class="page-sub">24 team members · Q2 2026</div>
+    </div>
+    <div style="display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+      <input class="form-input" style="width:260px;" placeholder="🔍 Search employees..." oninput="filterEmployees(this.value)"/>
+      <select class="form-select" style="width:160px;">
+        <option>All Departments</option>
+        <option>Engineering</option>
+        <option>Product</option>
+        <option>Design</option>
+        <option>Sales</option>
+      </select>
+      <button class="btn btn-primary" style="margin-left:auto;" onclick="openReviewModal()">+ Add Employee</button>
+    </div>
+    <div class="card">
+      <table id="emp-table">
+        <thead><tr>
+          <th>Employee</th><th>Department</th><th>Role Level</th><th>Perf. Score</th><th>Goals %</th><th>Last Review</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="emp-tbody">
+          <tr>
+            <td><div class="emp-name">Aisha Patel</div><div class="emp-dept">she/her</div></td>
+            <td><span class="chip chip-blue">Engineering</span></td><td>Senior</td>
+            <td><span class="score-pill excellent">9.1</span></td><td>
+              <div style="display:flex;align-items:center;gap:.5rem;"><div class="progress-bar" style="width:70px;"><div class="progress-fill fill-green" style="width:87%"></div></div><span style="font-size:.75rem;">87%</span></div>
+            </td><td style="color:var(--muted);font-size:.82rem;">Mar 2026</td>
+            <td><button class="btn btn-sm btn-secondary" onclick="generateReview('Aisha Patel')">Review</button></td>
+          </tr>
+          <tr>
+            <td><div class="emp-name">Marcus Chen</div><div class="emp-dept">he/him</div></td>
+            <td><span class="chip chip-green">Product</span></td><td>Mid</td>
+            <td><span class="score-pill good">7.8</span></td><td>
+              <div style="display:flex;align-items:center;gap:.5rem;"><div class="progress-bar" style="width:70px;"><div class="progress-fill fill-blue" style="width:72%"></div></div><span style="font-size:.75rem;">72%</span></div>
+            </td><td style="color:var(--muted);font-size:.82rem;">Mar 2026</td>
+            <td><button class="btn btn-sm btn-secondary" onclick="generateReview('Marcus Chen')">Review</button></td>
+          </tr>
+          <tr>
+            <td><div class="emp-name">Sofia Rodriguez</div><div class="emp-dept">she/her</div></td>
+            <td><span class="chip chip-amber">Design</span></td><td>Senior</td>
+            <td><span class="score-pill good">8.2</span></td><td>
+              <div style="display:flex;align-items:center;gap:.5rem;"><div class="progress-bar" style="width:70px;"><div class="progress-fill fill-amber" style="width:80%"></div></div><span style="font-size:.75rem;">80%</span></div>
+            </td><td style="color:var(--muted);font-size:.82rem;">Mar 2026</td>
+            <td><button class="btn btn-sm btn-secondary" onclick="generateReview('Sofia Rodriguez')">Review</button></td>
+          </tr>
+          <tr>
+            <td><div class="emp-name">James Okonkwo</div><div class="emp-dept">he/him</div></td>
+            <td><span class="chip chip-blue">Engineering</span></td><td>Junior</td>
+            <td><span class="score-pill average">6.4</span></td><td>
+              <div style="display:flex;align-items:center;gap:.5rem;"><div class="progress-bar" style="width:70px;"><div class="progress-fill fill-amber" style="width:55%"></div></div><span style="font-size:.75rem;">55%</span></div>
+            </td><td style="color:var(--muted);font-size:.82rem;">Sep 2025</td>
+            <td><button class="btn btn-sm btn-secondary" onclick="generateReview('James Okonkwo')">Review</button></td>
+          </tr>
+          <tr>
+            <td><div class="emp-name">Priya Sharma</div><div class="emp-dept">she/her</div></td>
+            <td><span class="chip chip-green">Sales</span></td><td>Senior</td>
+            <td><span class="score-pill excellent">8.9</span></td><td>
+              <div style="display:flex;align-items:center;gap:.5rem;"><div class="progress-bar" style="width:70px;"><div class="progress-fill fill-green" style="width:91%"></div></div><span style="font-size:.75rem;">91%</span></div>
+            </td><td style="color:var(--muted);font-size:.82rem;">Mar 2026</td>
+            <td><button class="btn btn-sm btn-secondary" onclick="generateReview('Priya Sharma')">Review</button></td>
+          </tr>
+          <tr>
+            <td><div class="emp-name">David Kim</div><div class="emp-dept">he/him</div></td>
+            <td><span class="chip chip-blue">Engineering</span></td><td>Staff</td>
+            <td><span class="score-pill excellent">9.3</span></td><td>
+              <div style="display:flex;align-items:center;gap:.5rem;"><div class="progress-bar" style="width:70px;"><div class="progress-fill fill-green" style="width:93%"></div></div><span style="font-size:.75rem;">93%</span></div>
+            </td><td style="color:var(--muted);font-size:.82rem;">Mar 2026</td>
+            <td><button class="btn btn-sm btn-secondary" onclick="generateReview('David Kim')">Review</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- REVIEWS -->
+  <div class="page" id="page-reviews">
+    <div class="page-header">
+      <div class="breadcrumb">PerformAI <span>›</span> Reviews</div>
+      <div class="page-title">Performance Reviews</div>
+      <div class="page-sub">AI-generated, bias-mitigated evaluations</div>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:1.5rem;">
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">🤖</span> Generate AI Review</div>
+        <div class="form-group">
+          <label class="form-label">Select Employee</label>
+          <select class="form-select" id="review-emp-select">
+            <option value="">Choose employee...</option>
+            <option>Aisha Patel — Engineering</option>
+            <option>Marcus Chen — Product</option>
+            <option>Sofia Rodriguez — Design</option>
+            <option>James Okonkwo — Engineering</option>
+            <option>Priya Sharma — Sales</option>
+            <option>David Kim — Engineering</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Review Period</label>
+          <select class="form-select">
+            <option>Q2 2026 (Jan–Apr)</option>
+            <option>Q1 2026 (Oct–Dec)</option>
+            <option>Annual 2025</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Performance Score (1–10)</label>
+          <input type="range" class="range-input" min="1" max="10" value="7" oninput="document.getElementById('rval').textContent=this.value" id="review-score-slider"/>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.25rem;">
+            <span style="font-size:.75rem;color:var(--muted);">Below Expectations → Exceptional</span>
+            <span class="range-val" id="rval">7</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Key Achievements</label>
+          <textarea class="form-textarea" id="achievements-input" placeholder="Describe key accomplishments this period..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Areas for Growth</label>
+          <textarea class="form-textarea" id="growth-input" placeholder="Areas needing improvement or development..."></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="generateFullReview()">
+          🤖 Generate AI Performance Review
+        </button>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div class="card-title"><span class="ct-icon">📥</span> Multi-Source Feedback</div>
+          <div style="display:flex;flex-direction:column;gap:.75rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:.85rem;">Self Assessment</div>
+              <div style="display:flex;gap:.25rem;">
+                <div class="star active">★</div><div class="star active">★</div><div class="star active">★</div><div class="star active">★</div><div class="star">★</div>
+                <span style="font-size:.8rem;color:var(--muted);margin-left:.25rem;">4/5</span>
+              </div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill fill-blue" style="width:80%"></div></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:.85rem;">Peer Feedback (3 peers)</div>
+              <div style="display:flex;gap:.25rem;">
+                <div class="star active">★</div><div class="star active">★</div><div class="star active">★</div><div class="star active">★</div><div class="star active">★</div>
+                <span style="font-size:.8rem;color:var(--muted);margin-left:.25rem;">4.6/5</span>
+              </div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill fill-green" style="width:92%"></div></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:.85rem;">Manager Rating</div>
+              <div style="display:flex;gap:.25rem;">
+                <div class="star active">★</div><div class="star active">★</div><div class="star active">★</div><div class="star active">★</div><div class="star">★</div>
+                <span style="font-size:.8rem;color:var(--muted);margin-left:.25rem;">4.2/5</span>
+              </div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill fill-amber" style="width:84%"></div></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:.85rem;">360° Upward Feedback</div>
+              <div style="display:flex;gap:.25rem;">
+                <div class="star active">★</div><div class="star active">★</div><div class="star active">★</div><div class="star active">★</div><div class="star">★</div>
+                <span style="font-size:.8rem;color:var(--muted);margin-left:.25rem;">3.9/5</span>
+              </div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill fill-purple" style="width:78%"></div></div>
+          </div>
+        </div>
+
+        <div class="bias-alert">
+          <div class="bias-icon">⚖️</div>
+          <div class="bias-text">
+            <div class="bias-title">Bias Mitigation Active</div>
+            AI reviews are calibrated against demographic patterns. Gender-coded language, recency bias, and halo/horn effects are automatically detected and corrected.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Review Output -->
+    <div id="review-output" style="display:none;">
+      <div class="card">
+        <div class="card-title" style="justify-content:space-between;">
+          <span><span class="ct-icon">📄</span> Generated Performance Review</span>
+          <div style="display:flex;gap:.5rem;">
+            <button class="btn btn-sm btn-secondary" onclick="copyReview()">📋 Copy</button>
+            <button class="btn btn-sm btn-success">✅ Approve & Save</button>
+          </div>
+        </div>
+        <div class="report-box" id="review-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOALS -->
+  <div class="page" id="page-goals">
+    <div class="page-header">
+      <div class="breadcrumb">PerformAI <span>›</span> Goals</div>
+      <div class="page-title">Goal Setting & Tracking</div>
+      <div class="page-sub">OKRs, SMART goals, and AI-assisted planning</div>
+    </div>
+    <div style="display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+      <div class="tabs" style="margin-bottom:0;border:none;">
+        <div class="tab active" onclick="filterGoals('all',this)">All Goals</div>
+        <div class="tab" onclick="filterGoals('in-progress',this)">In Progress</div>
+        <div class="tab" onclick="filterGoals('done',this)">Completed</div>
+        <div class="tab" onclick="filterGoals('overdue',this)">Overdue</div>
+      </div>
+      <button class="btn btn-primary" style="margin-left:auto;" onclick="openGoalModal()">+ Set New Goal</button>
+    </div>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div class="card-title"><span class="ct-icon">🤖</span> AI Goal Generator</div>
+          <div class="form-group">
+            <label class="form-label">Employee & Role Context</label>
+            <input class="form-input" id="goal-context" placeholder="e.g., Senior Engineer, Aisha Patel, Q2 2026..."/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Focus Area</label>
+            <select class="form-select" id="goal-focus">
+              <option>Technical Skills</option>
+              <option>Leadership</option>
+              <option>Communication</option>
+              <option>Business Impact</option>
+              <option>Personal Development</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="generateGoals()">🎯 Generate SMART Goals</button>
+          <div id="goals-output" style="margin-top:1rem;display:none;" class="report-box"></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:.75rem;" id="goals-list">
+        <div class="goal-item" data-status="in-progress">
+          <div class="goal-check" onclick="toggleGoal(this)"></div>
+          <div class="goal-content">
+            <div class="goal-title">Ship microservices refactor for payments module</div>
+            <div class="goal-meta">
+              <span>🗓 Due May 30</span><span>👤 Aisha Patel</span><span class="chip chip-blue">Technical</span>
+            </div>
+            <div class="goal-progress-bar">
+              <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-bottom:.2rem;"><span>Progress</span><span>68%</span></div>
+              <div class="progress-bar"><div class="progress-fill fill-blue" style="width:68%"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="goal-item" data-status="done">
+          <div class="goal-check done" onclick="toggleGoal(this)"></div>
+          <div class="goal-content" style="opacity:.7;">
+            <div class="goal-title">Complete AWS Solutions Architect certification</div>
+            <div class="goal-meta">
+              <span>✅ Completed Apr 2</span><span>👤 Aisha Patel</span><span class="chip chip-green">Learning</span>
+            </div>
+          </div>
+        </div>
+        <div class="goal-item" data-status="in-progress">
+          <div class="goal-check" onclick="toggleGoal(this)"></div>
+          <div class="goal-content">
+            <div class="goal-title">Grow product NPS from 42 to 55 by end of Q2</div>
+            <div class="goal-meta">
+              <span>🗓 Due Jun 30</span><span>👤 Marcus Chen</span><span class="chip chip-amber">Business</span>
+            </div>
+            <div class="goal-progress-bar">
+              <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-bottom:.2rem;"><span>NPS: 48 / 55</span><span>71%</span></div>
+              <div class="progress-bar"><div class="progress-fill fill-amber" style="width:71%"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="goal-item" data-status="overdue">
+          <div class="goal-check" onclick="toggleGoal(this)"></div>
+          <div class="goal-content">
+            <div class="goal-title">Lead 3 cross-functional design sprints</div>
+            <div class="goal-meta">
+              <span style="color:var(--danger);">⚠️ Overdue Mar 31</span><span>👤 Sofia Rodriguez</span><span class="chip chip-red">Leadership</span>
+            </div>
+            <div class="goal-progress-bar">
+              <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-bottom:.2rem;"><span>1 / 3 completed</span><span>33%</span></div>
+              <div class="progress-bar"><div class="progress-fill fill-red" style="width:33%"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="goal-item" data-status="in-progress">
+          <div class="goal-check" onclick="toggleGoal(this)"></div>
+          <div class="goal-content">
+            <div class="goal-title">Mentor 2 junior engineers through structured program</div>
+            <div class="goal-meta">
+              <span>🗓 Due Jun 30</span><span>👤 David Kim</span><span class="chip chip-blue">Leadership</span>
+            </div>
+            <div class="goal-progress-bar">
+              <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-bottom:.2rem;"><span>Progress</span><span>50%</span></div>
+              <div class="progress-bar"><div class="progress-fill fill-purple" style="width:50%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI AGENT -->
+  <div class="page" id="page-ai-agent">
+    <div class="page-header">
+      <div class="breadcrumb">PerformAI <span>›</span> AI Agent</div>
+      <div class="page-title">Performance AI Agent</div>
+      <div class="page-sub">Powered by Claude — Ask anything about performance, goals, reviews, or development</div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="ai-panel">
+        <div class="ai-header">
+          <div class="ai-dot"></div>
+          <div>
+            <div class="ai-title">PerformAI Assistant</div>
+            <div class="ai-subtitle">Claude-powered · Bias-aware · Always fair</div>
+          </div>
+        </div>
+        <div class="ai-messages" id="ai-messages">
+          <div class="msg msg-ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">👋 Hello! I'm your Performance AI Agent, powered by Claude. I can help you:<br><br>
+              • Generate fair, bias-free performance reviews<br>
+              • Analyze feedback from multiple sources<br>
+              • Set SMART goals and development plans<br>
+              • Identify patterns and coaching opportunities<br>
+              • Check for bias in evaluations<br><br>
+              What would you like help with today?
+            </div>
+          </div>
+        </div>
+        <div class="ai-input-row">
+          <input class="ai-input" id="ai-chat-input" placeholder="Ask about performance, reviews, goals..." onkeydown="if(event.key==='Enter')sendAgentMessage()"/>
+          <button class="btn btn-primary btn-sm" onclick="sendAgentMessage()">Send ↗</button>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:1.25rem;">
+        <div class="card">
+          <div class="card-title"><span class="ct-icon">⚡</span> Quick Actions</div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;">
+            <button class="btn btn-secondary" style="justify-content:flex-start;" onclick="quickPrompt('Generate a performance review for a senior engineer who exceeded goals but needs to improve communication')">📋 Generate review draft</button>
+            <button class="btn btn-secondary" style="justify-content:flex-start;" onclick="quickPrompt('Identify potential bias in this review: He is very aggressive in meetings and always pushes his agenda')">⚖️ Check for bias</button>
+            <button class="btn btn-secondary" style="justify-content:flex-start;" onclick="quickPrompt('Create a 90-day development plan for a junior developer who wants to move into a senior role')">🎯 Create development plan</button>
+            <button class="btn btn-secondary" style="justify-content:flex-start;" onclick="quickPrompt('What are best practices for giving fair and constructive performance feedback?')">💡 Review best practices</button>
+            <button class="btn btn-secondary" style="justify-content:flex-start;" onclick="quickPrompt('Analyze these scores and suggest coaching: Technical: 9, Communication: 5, Teamwork: 7, Leadership: 4, Delivery: 8')">📊 Analyze performance data</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="ct-icon">⚖️</span> Bias Detection Status</div>
+          <div style="display:flex;flex-direction:column;gap:.65rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:.85rem;">Gender-coded language</span>
+              <span class="chip chip-green">✓ Clean</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:.85rem;">Recency bias</span>
+              <span class="chip chip-amber">⚠ 1 flag</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:.85rem;">Halo/horn effect</span>
+              <span class="chip chip-green">✓ Clean</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:.85rem;">Affinity bias</span>
+              <span class="chip chip-green">✓ Clean</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:.85rem;">Attribution bias</span>
+              <span class="chip chip-red">⚠ 2 flags</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 360 FEEDBACK -->
+  <div class="page" id="page-feedback">
+    <div class="page-header">
+      <div class="breadcrumb">PerformAI <span>›</span> 360° Feedback</div>
+      <div class="page-title">360° Feedback Collection</div>
+      <div class="page-sub">Multi-source, anonymized, structured feedback</div>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📝</span> Submit Peer Feedback</div>
+        <div class="form-group">
+          <label class="form-label">Feedback Recipient</label>
+          <select class="form-select">
+            <option>Aisha Patel</option><option>Marcus Chen</option><option>Sofia Rodriguez</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Relationship</label>
+          <select class="form-select">
+            <option>Peer / Teammate</option><option>Direct Report</option><option>Cross-functional Collaborator</option>
+          </select>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1rem;">
+          <div>
+            <div class="form-label" style="margin-bottom:.4rem;">Technical Skills</div>
+            <div class="star-rating" id="stars-tech">
+              <span class="star" onclick="setStar('stars-tech',1)">★</span><span class="star" onclick="setStar('stars-tech',2)">★</span><span class="star" onclick="setStar('stars-tech',3)">★</span><span class="star" onclick="setStar('stars-tech',4)">★</span><span class="star" onclick="setStar('stars-tech',5)">★</span>
+            </div>
+          </div>
+          <div>
+            <div class="form-label" style="margin-bottom:.4rem;">Collaboration</div>
+            <div class="star-rating" id="stars-collab">
+              <span class="star" onclick="setStar('stars-collab',1)">★</span><span class="star" onclick="setStar('stars-collab',2)">★</span><span class="star" onclick="setStar('stars-collab',3)">★</span><span class="star" onclick="setStar('stars-collab',4)">★</span><span class="star" onclick="setStar('stars-collab',5)">★</span>
+            </div>
+          </div>
+          <div>
+            <div class="form-label" style="margin-bottom:.4rem;">Communication</div>
+            <div class="star-rating" id="stars-comm">
+              <span class="star" onclick="setStar('stars-comm',1)">★</span><span class="star" onclick="setStar('stars-comm',2)">★</span><span class="star" onclick="setStar('stars-comm',3)">★</span><span class="star" onclick="setStar('stars-comm',4)">★</span><span class="star" onclick="setStar('stars-comm',5)">★</span>
+            </div>
+          </div>
+          <div>
+            <div class="form-label" style="margin-bottom:.4rem;">Leadership / Initiative</div>
+            <div class="star-rating" id="stars-lead">
+              <span class="star" onclick="setStar('stars-lead',1)">★</span><span class="star" onclick="setStar('stars-lead',2)">★</span><span class="star" onclick="setStar('stars-lead',3)">★</span><span class="star" onclick="setStar('stars-lead',4)">★</span><span class="star" onclick="setStar('stars-lead',5)">★</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Strengths (What should they keep doing?)</label>
+          <textarea class="form-textarea" placeholder="Be specific and behavioral..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Growth Areas (What should they work on?)</label>
+          <textarea class="form-textarea" placeholder="Be constructive and actionable..."></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="showToast('✅ Anonymous feedback submitted successfully!')">Submit Anonymous Feedback</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📊</span> Feedback Summary — Aisha Patel</div>
+        <div style="display:flex;gap:1.5rem;align-items:center;margin-bottom:1.5rem;">
+          <div class="score-ring">
+            <svg width="90" height="90" viewBox="0 0 90 90">
+              <circle cx="45" cy="45" r="38" fill="none" stroke="var(--surface2)" stroke-width="8"/>
+              <circle cx="45" cy="45" r="38" fill="none" stroke="var(--accent2)" stroke-width="8" stroke-dasharray="239" stroke-dashoffset="48" stroke-linecap="round"/>
+            </svg>
+            <div class="score-ring-label">
+              <div class="score-ring-num">9.1</div>
+              <div class="score-ring-sub">Overall</div>
+            </div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:.75rem;">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.8rem;"><span>Technical</span><span style="color:var(--accent2);font-weight:700;">4.8/5</span></div>
+              <div class="progress-bar"><div class="progress-fill fill-green" style="width:96%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.8rem;"><span>Collaboration</span><span style="color:var(--accent);font-weight:700;">4.4/5</span></div>
+              <div class="progress-bar"><div class="progress-fill fill-blue" style="width:88%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.8rem;"><span>Communication</span><span style="color:var(--accent3);font-weight:700;">3.9/5</span></div>
+              <div class="progress-bar"><div class="progress-fill fill-amber" style="width:78%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.8rem;"><span>Leadership</span><span style="color:var(--accent2);font-weight:700;">4.6/5</span></div>
+              <div class="progress-bar"><div class="progress-fill fill-green" style="width:92%"></div></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.75rem;">
+          <div style="background:var(--surface2);border-radius:8px;padding:.75rem;font-size:.82rem;border-left:3px solid var(--accent2);">
+            <div style="font-weight:600;color:var(--muted);font-size:.7rem;margin-bottom:.3rem;">PEER FEEDBACK</div>
+            "Aisha is an exceptional problem solver and consistently goes beyond her scope to help the team ship faster."
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:.75rem;font-size:.82rem;border-left:3px solid var(--accent);">
+            <div style="font-weight:600;color:var(--muted);font-size:.7rem;margin-bottom:.3rem;">MANAGER FEEDBACK</div>
+            "Strong technical delivery. Recommend working on async communication — documentation could be stronger for cross-team collaboration."
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BIAS PAGE -->
+  <div class="page" id="page-bias">
+    <div class="page-header">
+      <div class="breadcrumb">PerformAI <span>›</span> Bias Check</div>
+      <div class="page-title">Bias Mitigation Engine</div>
+      <div class="page-sub">AI-powered fairness analysis for all performance evaluations</div>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">🔍</span> Bias Analyzer</div>
+        <div class="form-group">
+          <label class="form-label">Paste Review Text for Analysis</label>
+          <textarea class="form-textarea" style="min-height:160px;" id="bias-text-input" placeholder="Paste any performance review text here to check for potential bias..."></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="analyzeBias()">⚖️ Analyze for Bias</button>
+        <div id="bias-output" style="margin-top:1rem;display:none;" class="report-box"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📚</span> Bias Types We Detect</div>
+        <div style="display:flex;flex-direction:column;gap:.75rem;">
+          <div class="bias-alert">
+            <div class="bias-icon">🎭</div>
+            <div class="bias-text"><div class="bias-title" style="color:var(--accent);">Gender-Coded Language</div>Words like "bossy", "aggressive", "nurturing" carry unconscious gender associations.</div>
+          </div>
+          <div class="bias-alert">
+            <div class="bias-icon">🕐</div>
+            <div class="bias-text"><div class="bias-title" style="color:var(--accent);">Recency Bias</div>Overweighting recent events while ignoring consistent performance across the full period.</div>
+          </div>
+          <div class="bias-alert">
+            <div class="bias-icon">😇</div>
+            <div class="bias-text"><div class="bias-title" style="color:var(--accent);">Halo/Horn Effect</div>One trait (positive or negative) dominating the entire evaluation unfairly.</div>
+          </div>
+          <div class="bias-alert">
+            <div class="bias-icon">👥</div>
+            <div class="bias-text"><div class="bias-title" style="color:var(--accent);">Affinity Bias</div>Rating people similar to yourself more favorably without objective evidence.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div class="page" id="page-analytics">
+    <div class="page-header">
+      <div class="breadcrumb">PerformAI <span>›</span> Analytics</div>
+      <div class="page-title">Performance Analytics</div>
+      <div class="page-sub">Trends, patterns, and workforce insights</div>
+    </div>
+    <div class="grid grid-3" style="margin-bottom:1.25rem;">
+      <div class="metric-card">
+        <div class="metric-label">Score Distribution</div>
+        <div style="display:flex;gap:.5rem;margin-top:.75rem;align-items:flex-end;height:60px;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:.25rem;flex:1;">
+            <div style="width:100%;background:var(--danger);border-radius:3px 3px 0 0;height:15%;"></div>
+            <div style="font-size:.6rem;color:var(--muted);">1-4</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:.25rem;flex:1;">
+            <div style="width:100%;background:var(--accent3);border-radius:3px 3px 0 0;height:25%;"></div>
+            <div style="font-size:.6rem;color:var(--muted);">5-6</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:.25rem;flex:1;">
+            <div style="width:100%;background:var(--accent);border-radius:3px 3px 0 0;height:65%;"></div>
+            <div style="font-size:.6rem;color:var(--muted);">7-8</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:.25rem;flex:1;">
+            <div style="width:100%;background:var(--accent2);border-radius:3px 3px 0 0;height:100%;"></div>
+            <div style="font-size:.6rem;color:var(--muted);">9-10</div>
+          </div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Top Performers</div>
+        <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.8rem;">
+            <span>David Kim</span><span class="chip chip-green">9.3</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.8rem;">
+            <span>Aisha Patel</span><span class="chip chip-green">9.1</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.8rem;">
+            <span>Priya Sharma</span><span class="chip chip-green">8.9</span>
+          </div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Needs Attention</div>
+        <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.8rem;">
+            <span>James Okonkwo</span><span class="chip chip-amber">6.4</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.8rem;">
+            <span>Tom Richards</span><span class="chip chip-amber">6.7</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.8rem;">
+            <span>Nina Brooks</span><span class="chip chip-amber">6.9</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ct-icon">📈</span> Quarterly Score Trend (All Departments)</div>
+      <div style="position:relative;height:180px;margin-top:1rem;">
+        <svg width="100%" height="180" viewBox="0 0 800 180" preserveAspectRatio="none" style="overflow:visible;">
+          <defs>
+            <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,130 L133,110 L266,100 L400,85 L533,75 L666,65 L800,55" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+          <path d="M0,130 L133,110 L266,100 L400,85 L533,75 L666,65 L800,55 L800,180 L0,180 Z" fill="url(#grad1)"/>
+          <path d="M0,140 L133,135 L266,125 L400,120 L533,115 L666,108 L800,100" fill="none" stroke="#06d6a0" stroke-width="2" stroke-dasharray="6,3" opacity="0.6"/>
+          <text x="0" y="175" fill="#64748b" font-size="11">Q2 '25</text>
+          <text x="120" y="175" fill="#64748b" font-size="11">Q3 '25</text>
+          <text x="248" y="175" fill="#64748b" font-size="11">Q4 '25</text>
+          <text x="380" y="175" fill="#64748b" font-size="11">Q1 '26</text>
+          <text x="510" y="175" fill="#64748b" font-size="11">Q2 '26</text>
+        </svg>
+        <div style="position:absolute;top:0;right:0;display:flex;gap:1rem;">
+          <span style="font-size:.75rem;color:var(--accent);">— Actual</span>
+          <span style="font-size:.75rem;color:var(--accent2);">-- Target</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- TOAST -->
+<div class="toast hidden" id="toast">
+  <span>✅</span>
+  <span id="toast-msg">Done!</span>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="review-modal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>📋 New Review / Employee</span>
+      <button class="modal-close" onclick="closeModal('review-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Employee Name</label>
+      <input class="form-input" placeholder="Full name"/>
+    </div>
+    <div class="grid grid-2">
+      <div class="form-group">
+        <label class="form-label">Department</label>
+        <select class="form-select"><option>Engineering</option><option>Product</option><option>Design</option><option>Sales</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role Level</label>
+        <select class="form-select"><option>Junior</option><option>Mid</option><option>Senior</option><option>Staff</option></select>
+      </div>
+    </div>
+    <div style="display:flex;gap:.75rem;margin-top:.5rem;">
+      <button class="btn btn-secondary" style="flex:1;" onclick="closeModal('review-modal')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="closeModal('review-modal');showToast('✅ Employee added!')">Add Employee</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="goal-modal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>🎯 Set New Goal</span>
+      <button class="modal-close" onclick="closeModal('goal-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Goal Title</label>
+      <input class="form-input" placeholder="Specific, measurable goal..."/>
+    </div>
+    <div class="grid grid-2">
+      <div class="form-group">
+        <label class="form-label">Assignee</label>
+        <select class="form-select"><option>Aisha Patel</option><option>Marcus Chen</option><option>Sofia Rodriguez</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Due Date</label>
+        <input class="form-input" type="date"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <select class="form-select"><option>Technical</option><option>Leadership</option><option>Business Impact</option><option>Learning</option></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Success Criteria</label>
+      <textarea class="form-textarea" placeholder="How will we measure success?"></textarea>
+    </div>
+    <div style="display:flex;gap:.75rem;margin-top:.5rem;">
+      <button class="btn btn-secondary" style="flex:1;" onclick="closeModal('goal-modal')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="closeModal('goal-modal');showToast('🎯 Goal created!')">Create Goal</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://api.anthropic.com/v1/messages";
+const MODEL = "claude-sonnet-4-20250514";
+
+// Navigation
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+id)?.classList.add('active');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+function setActive(el) {
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+function openReviewModal(){document.getElementById('review-modal').classList.add('open');}
+function openGoalModal(){document.getElementById('goal-modal').classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// Toast
+function showToast(msg, duration=3000){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.remove('hidden');
+  setTimeout(()=>t.classList.add('hidden'),duration);
+}
+
+// Stars
+function setStar(containerId, val){
+  const stars=document.querySelectorAll('#'+containerId+' .star');
+  stars.forEach((s,i)=>s.classList.toggle('active',i<val));
+}
+
+// Goal filters
+function filterGoals(status, el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.goal-item').forEach(g=>{
+    if(status==='all'||g.dataset.status===status) g.style.display='flex';
+    else g.style.display='none';
+  });
+}
+function toggleGoal(el){
+  el.classList.toggle('done');
+  const gi=el.closest('.goal-item');
+  if(gi) gi.dataset.status=el.classList.contains('done')?'done':'in-progress';
+}
+
+// Employee filter
+function filterEmployees(val){
+  const rows=document.querySelectorAll('#emp-tbody tr');
+  rows.forEach(r=>{
+    const name=r.querySelector('.emp-name')?.textContent.toLowerCase()||'';
+    r.style.display=name.includes(val.toLowerCase())?'':'none';
+  });
+}
+
+// Copy review
+function copyReview(){
+  const t=document.getElementById('review-content')?.innerText||'';
+  navigator.clipboard.writeText(t).then(()=>showToast('📋 Copied to clipboard!'));
+}
+
+// Anthropic API call
+async function callClaude(systemPrompt, userMessage) {
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: [{role:'user', content: userMessage}]
+    })
+  });
+  const data = await resp.json();
+  if(data.error) throw new Error(data.error.message);
+  return data.content.map(c=>c.text||'').join('');
+}
+
+// Generate full review
+async function generateFullReview() {
+  const empEl = document.getElementById('review-emp-select');
+  const emp = empEl.value || 'the employee';
+  const score = document.getElementById('review-score-slider').value;
+  const achievements = document.getElementById('achievements-input').value || 'Strong overall performance';
+  const growth = document.getElementById('growth-input').value || 'Continue professional development';
+  
+  const btn = event.currentTarget;
+  btn.textContent = '⏳ Generating...';
+  btn.disabled = true;
+
+  const system = `You are an expert HR performance review writer. You write fair, unbiased, professional performance reviews. Avoid gender-coded language. Be specific and behavioral. Structure reviews clearly with sections. Always focus on behaviors and outcomes, not personality traits.`;
+  const prompt = `Write a professional performance review for ${emp}.
+Performance Score: ${score}/10
+Key Achievements: ${achievements}
+Areas for Growth: ${growth}
+
+Include these sections:
+1. Overall Performance Summary
+2. Key Achievements & Impact  
+3. Core Competencies Assessment
+4. Areas for Development
+5. Goals for Next Period
+6. Manager Recommendation
+
+Keep it fair, specific, and constructive. Remove any potential bias. 3-4 sentences per section.`;
+
+  try {
+    const result = await callClaude(system, prompt);
+    document.getElementById('review-output').style.display = 'block';
+    document.getElementById('review-content').innerText = result;
+    showToast('✅ Review generated successfully!');
+    document.getElementById('review-output').scrollIntoView({behavior:'smooth'});
+  } catch(e) {
+    showToast('❌ Error: '+e.message, 5000);
+  } finally {
+    btn.textContent = '🤖 Generate AI Performance Review';
+    btn.disabled = false;
+  }
+}
+
+// Generate review from table
+function generateReview(name) {
+  document.getElementById('review-emp-select').value = '';
+  document.getElementById('achievements-input').value = '';
+  document.getElementById('growth-input').value = '';
+  document.querySelector('#review-emp-select').querySelector('option[value=""]').selected = true;
+  // Add dynamic option
+  const sel = document.getElementById('review-emp-select');
+  const found = [...sel.options].some(o => o.text.startsWith(name));
+  if(!found){
+    const opt = new Option(name, name);
+    sel.add(opt);
+  }
+  sel.value = name;
+  showPage('reviews', null);
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('nav button')[2].classList.add('active');
+  showToast(`📋 Review form loaded for ${name}`);
+}
+
+// Generate SMART Goals
+async function generateGoals() {
+  const context = document.getElementById('goal-context').value || 'an employee';
+  const focus = document.getElementById('goal-focus').value;
+  const btn = event.currentTarget;
+  btn.textContent = '⏳ Generating...';
+  btn.disabled = true;
+  
+  const system = `You are an expert in OKR and SMART goal setting for employee development. Create specific, measurable, achievable, relevant, time-bound goals.`;
+  const prompt = `Generate 3 SMART goals for: ${context}
+Focus area: ${focus}
+Format each goal with:
+- Goal title (bold)
+- Specific outcome
+- Success metric
+- Timeline
+- Why it matters`;
+
+  try {
+    const out = document.getElementById('goals-output');
+    out.style.display = 'block';
+    out.textContent = '⏳ Generating SMART goals...';
+    const result = await callClaude(system, prompt);
+    out.innerText = result;
+    showToast('🎯 SMART goals generated!');
+  } catch(e) {
+    showToast('❌ '+e.message, 5000);
+  } finally {
+    btn.textContent = '🎯 Generate SMART Goals';
+    btn.disabled = false;
+  }
+}
+
+// AI Agent Chat
+let chatHistory = [];
+
+async function sendAgentMessage() {
+  const input = document.getElementById('ai-chat-input');
+  const msg = input.value.trim();
+  if(!msg) return;
+  input.value = '';
+  
+  appendMessage(msg, 'user');
+  chatHistory.push({role:'user', content: msg});
+  
+  // Typing indicator
+  const typingId = appendTyping();
+  
+  const system = `You are PerformAI, an expert AI agent specializing in performance management, HR best practices, and organizational development. You help HR managers and leaders:
+- Write fair, unbiased performance reviews
+- Set SMART goals and development plans
+- Identify patterns in performance data
+- Detect and mitigate bias in evaluations
+- Coach managers on effective feedback
+- Analyze multi-source feedback
+Always be practical, specific, and actionable. Keep responses concise but insightful. Be aware of DEI best practices.`;
+
+  try {
+    const result = await callClaude(system, msg);
+    removeTyping(typingId);
+    appendMessage(result, 'ai');
+    chatHistory.push({role:'assistant', content: result});
+  } catch(e) {
+    removeTyping(typingId);
+    appendMessage('Sorry, I encountered an error: ' + e.message, 'ai');
+  }
+}
+
+function appendMessage(text, role) {
+  const container = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.className = `msg msg-${role}`;
+  div.innerHTML = `
+    <div class="msg-avatar">${role==='ai'?'AI':'Me'}</div>
+    <div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>
+  `;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function appendTyping() {
+  const container = document.getElementById('ai-messages');
+  const id = 'typing-'+Date.now();
+  const div = document.createElement('div');
+  div.className = 'msg msg-ai';
+  div.id = id;
+  div.innerHTML = `
+    <div class="msg-avatar">AI</div>
+    <div class="msg-bubble"><div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>
+  `;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return id;
+}
+function removeTyping(id) { document.getElementById(id)?.remove(); }
+
+function quickPrompt(text) {
+  document.getElementById('ai-chat-input').value = text;
+  sendAgentMessage();
+}
+
+// Bias Analyzer
+async function analyzeBias() {
+  const text = document.getElementById('bias-text-input').value.trim();
+  if(!text) { showToast('⚠️ Please paste review text first'); return; }
+  const btn = event.currentTarget;
+  btn.textContent = '⏳ Analyzing...';
+  btn.disabled = true;
+
+  const system = `You are an expert in organizational psychology and DEI specializing in detecting bias in performance reviews. Analyze text for: gender-coded language, recency bias, halo/horn effect, affinity bias, attribution bias, microaggressions, and vague/unactionable feedback. Be specific about what you find and why it's biased. Provide corrected versions.`;
+  const prompt = `Analyze this performance review text for bias and fairness issues:\n\n"${text}"\n\nProvide:\n1. Bias Score (1-10, where 10 = heavily biased)\n2. Types of bias detected (be specific)\n3. Problematic phrases identified\n4. Corrected, bias-free version\n5. Overall recommendation`;
+
+  try {
+    const out = document.getElementById('bias-output');
+    out.style.display = 'block';
+    out.textContent = '⏳ Analyzing for bias...';
+    const result = await callClaude(system, prompt);
+    out.innerText = result;
+    showToast('⚖️ Bias analysis complete!');
+  } catch(e) {
+    showToast('❌ '+e.message, 5000);
+  } finally {
+    btn.textContent = '⚖️ Analyze for Bias';
+    btn.disabled = false;
+  }
+}
+
+// Close modal on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
